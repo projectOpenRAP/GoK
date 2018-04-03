@@ -1,0 +1,12 @@
+.watermark{
+    width: 100%;
+    text-align: center;
+    margin-top: 10em;
+}
+.watermark > i {
+    font-size: 6em !important ;
+    height: 0em !important;
+}
+.modal.visible.transition{
+    display: inline !important;
+}
