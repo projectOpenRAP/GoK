@@ -8,7 +8,23 @@ const { FS_ROOT } = require('./config/config.js');
 
 let { prepareDetailedFileList } = require('./gok.controller');
 
-let generateMetaFileName = (parentDirPath, metaFilePath, metaFileName) => path.relative(parentDirPath, metaFilePath).replace(path.sep, '_') + '_' + metaFileName + '.json';
+let generateMetaFileName = (metaFilePath, metaFileName) => metaFilePath.replace(new RegExp(path.sep, 'g'), '_') + '_' + metaFileName + '.json';
+
+let createDirectoryIfNotExists = (dir) => {
+    let defer = q.defer();
+
+    fs.mkdir(dir, (error) => {
+        if(!error) {
+            defer.resolve(dir);
+        } else if(error.code === 'EEXIST') {
+            defer.resolve(dir);
+        } else {
+            defer.reject('Error occurred while creating directory. \n' + error);
+        }
+    })
+
+    return defer.promise;
+}
 
 let generateMetaData = (parentDirPath) => {
     let defer = q.defer();
@@ -36,7 +52,7 @@ let generateMetaData = (parentDirPath) => {
                 if(readDirQueue.length > 0) {
                     walk(readDirQueue.shift());
                 } else {
-                    defer.resolve({ fileMetaDataList, parentDirPath });
+                    defer.resolve(fileMetaDataList);
                 }
             })
             .catch((error) => {
@@ -52,7 +68,7 @@ let generateMetaData = (parentDirPath) => {
     return defer.promise;
 }
 
-let writeMetaDataToFolder = ({ fileMetaDataList, parentDirPath }) => {
+let writeMetaDataToFolder = (fileMetaDataList) => {
     let defer = q.defer();
 
     let promises = fileMetaDataList.map((fileMetaData) => {
@@ -64,20 +80,20 @@ let writeMetaDataToFolder = ({ fileMetaDataList, parentDirPath }) => {
         }
 
         // Writing metadata
-        let metaFileName = generateMetaFileName(parentDirPath, fileMetaData.path, fileMetaData.name);
+        let metaFileName = generateMetaFileName(fileMetaData.path, fileMetaData.name);
 
         let metaFilePath = path.join(metaDirPath, metaFileName);
         return filesdk.writeFile(metaFilePath, JSON.stringify(fileMetaData))
     });
 
     q.all(promises)
-        .then((message) => defer.resolve({ fileMetaDataList, parentDirPath}))
+        .then((message) => defer.resolve(fileMetaDataList))
         .catch((error) => defer.reject(error));
 
     return defer.promise;
 }
 
-let indexMetaData = ({ fileMetaDataList, parentDirPath }) => {
+let indexMetaData = (fileMetaDataList) => {
     let defer = q.defer();
 
     searchsdk.init()
@@ -99,7 +115,7 @@ let indexMetaData = ({ fileMetaDataList, parentDirPath }) => {
         })
         .then((res) => {
             return fileMetaDataList.map((fileMetaData) => {
-                let metaFileName = generateMetaFileName(parentDirPath, fileMetaData.path, fileMetaData.name);
+                let metaFileName = generateMetaFileName(fileMetaData.path, fileMetaData.name);
 
                 return searchsdk.addDocument({ indexName : 'gok.db', documentPath : path.join(fileMetaData.path, '.meta', metaFileName) })
             });
@@ -126,9 +142,9 @@ let indexMetaData = ({ fileMetaDataList, parentDirPath }) => {
 }
 
 let initializePlugin = () => {
-    let parentDirPath = FS_ROOT;
 
-    generateMetaData(parentDirPath)
+    createDirectoryIfNotExists(FS_ROOT)
+        .then(generateMetaData)
         .then(writeMetaDataToFolder)
         .then(indexMetaData)
         .then(({success}) => {

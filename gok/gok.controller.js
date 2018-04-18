@@ -135,7 +135,31 @@ let performSearch = (req, res) => {
         message : undefined
     }
 
-    searchsdk.search({ indexName : 'gok.db', searchString : req.query.query })
+    const queryString = req.query.query;
+
+    const regExpQuery = queryString
+                            .split(/[\s.-]/)
+                            .reduce((temp, item) => {
+                                temp.push({
+                                    "regexp" : `.*${item.toLowerCase()}.*`,
+                                    "field" : "name"
+                                })
+                                return temp;
+                            }, []);
+
+    searchsdk.search({
+            indexName : 'gok.db',
+            searchString : JSON.stringify({
+                "disjuncts" :
+                    []
+                    .concat(regExpQuery)
+                    .concat({
+                        "match" : queryString,
+            			"analyzer" : "standard",
+                        "field" : "path"
+                    })
+            })
+        })
         .then((res) => {
             return JSON.parse(res.body).hits.map(item => searchsdk.getDocument({ indexName : item.index, documentID : item.id }));
         })
@@ -144,6 +168,9 @@ let performSearch = (req, res) => {
         })
         .then((results) => {
             let cleanedResults = results.map(item => JSON.parse(item.body).fields);
+
+            // To show only folder specific files
+            // .filter(item => item.path.startsWith(req.query.path));
 
             response = { ...response, success : true, data : cleanedResults, message : 'Search hits retrieved.' };
             res.status(200).json(response);
