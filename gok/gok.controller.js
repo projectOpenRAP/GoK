@@ -147,9 +147,9 @@ let performSearch = (req, res) => {
                                 return temp;
                             }, []);
 
-    searchsdk.search({
+    searchsdk.advancedSearch({
             indexName : 'gok.db',
-            searchString : JSON.stringify({
+            query : {
                 "disjuncts" :
                     []
                     .concat(regExpQuery)
@@ -158,7 +158,7 @@ let performSearch = (req, res) => {
             			"analyzer" : "standard",
                         "field" : "path"
                     })
-            })
+            }
         })
         .then((res) => {
             return JSON.parse(res.body).hits.map(item => searchsdk.getDocument({ indexName : item.index, documentID : item.id }));

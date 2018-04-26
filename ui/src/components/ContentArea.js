@@ -142,17 +142,32 @@ class ContentArea extends Component {
         }
         let arr = dirArr.concat(fileArr);
         return arr.map((file, index) => {
-
             let extension = path.extname(file.name);
 
             let icon = file.isDirectory ? mapIcon['dir'] : mapIcon[extension.toLowerCase()] || ['file outline', 'black'];
 
             return (
-                <div key={index} style={{ textAlign : 'center', width : '8em', padding : '1em' }}>
-                    <a style={{ outline : 'none' }} onClick={_.debounce((e) => this.handleFileItemClick(e, file), 500)} onDoubleClick={(e) => console.log("double clicked")}>
+                <div
+                    className='fileItem'
+                    key={index}
+                    style={{ textAlign : 'center', width : '8em', padding : '1em' }}>
+
+                    <a
+                        style={{ outline : 'none' }}
+                        onClick={_.debounce((e) => this.handleFileItemClick(e, file), 500)}
+                        onDoubleClick={(e) => console.log("double clicked")}>
+
                         <Icon link name={icon[0]} color={icon[1]} size='huge'/>
+
+                        <span className="popup">
+                            { path.relative(this.props.basePath, path.resolve(this.props.currentPath, file.name)) }
+                        </span>
+
                         <Divider fitted hidden style={{ paddingTop : '0.4em' }}/>
-                        <div style={{ color : 'black', width : '100%', wordWrap : 'break-word' }}>{path.basename(file.name)}</div>
+
+                        <div style={{ color : 'black', width : '100%', wordWrap : 'break-word' }}>
+                            { path.basename(file.name) }
+                        </div>
                     </a>
                 </div>
             );

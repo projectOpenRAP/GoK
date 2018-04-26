@@ -14,13 +14,15 @@ class NavigationBar extends Component {
         }
     }
 
-    // TODO : Creata a promise when searching for results.
+    // TODO : Perform a promise based search.
     // NOTE : Search willl have 3 states -- idle, doing (while fetching results), done (when results are fetched).
     // Promise can be used to detect all three states and change content area and icon accordingly.
 
     // toggleInputIcon = (callback) => {
     //     this.setState({ ...this.state, inputIcon : this.state.inputIcon === 'search' ? 'close' : 'search' }, callback);
     // }
+
+    handleKeyPress = e => e.key === 'Enter' && this.handleSearchClick();
 
     handleSearchClick = (e) => {
         // this.toggleInputIcon(() => {
@@ -34,9 +36,7 @@ class NavigationBar extends Component {
 
     handleInputTextChange = e => this.setState({ searchText : e.target.value });
 
-    handleHomeClick = (e) => {
-        this.props.setPath(this.props.basePath);
-    }
+    handleHomeClick = e => this.props.setPath(this.props.basePath);
 
     handleBackClick = (e) => {
         let newPath = path.join(this.props.currentPath, '../');
@@ -74,9 +74,9 @@ class NavigationBar extends Component {
                         </Segment>
                     </Grid.Column>
 
-                    <Grid.Column mobile={8} tablet={4} computer={5}>
+                    <Grid.Column mobile={8} tablet={4} computer={5} onKeyPress={this.handleKeyPress}>
                         <Input
-                            action={{ icon : 'search', size : 'big', color : 'blue', onClick : this.handleSearchClick}}
+                            action={{ icon : 'search', size : 'big', color : 'blue', onClick : this.handleSearchClick }}
                             placeholder='Search...'
                             value={this.state.searchText}
                             size='big'

@@ -54,7 +54,7 @@ class App extends Component {
     }
 
     handleSearchClick = (e, searchText) => {
-        axios.get(`${BASE_URL}/file/search`, { params : { query : searchText } })
+        axios.get(`${BASE_URL}/file/search`, { params : { query : searchText, path : this.state.currentPath }})
             .then((response) => {
                 let searchHits = response.data.data.map(item => ({ name : path.join(item.path, item.name), isDirectory : false }));
 
