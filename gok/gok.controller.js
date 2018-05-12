@@ -101,28 +101,53 @@ let getFileData = (req, res) => {
         message : undefined
     }
 
-    let filePath = req.query.path;
+    const filePath = req.query.path;
+    const range = req.headers.range;
 
     filesdk.getInfo(filePath)
-        .then((stats) => {
-            if(!stats.isDirectory()) {
-                try {
-                    let extension = path.extname(filePath);
+        .then(stats => {
+            if(stats.isDirectory()) {
+                throw filePath + ' is a directory.';
+            } else {
+                const basename = path.basename(filePath);
+                const extension = path.extname(filePath);
+                const fileSize = stats.size;
 
-                    res.writeHead(200, {
-                        'Content-Type': mapContentType[extension] || 'text/plain',
-                        'Content-Disposition': 'inline; filename=\"' + path.basename(filePath) + '\"'
-                    });
+                if(range) {
+                    const parts = range.replace(/bytes=/, '').split('-');
+
+                    const start = parseInt(parts[0], 10);
+                    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+                    const chunkSize = (end - start) + 1;
+
+                    const file = fs.createReadStream(filePath, {start, end});
+
+                    const head = {
+                        'Content-Type' : mapContentType[extension] || 'text/plain',
+                        'Content-Range' : `bytes ${start}-${end}/${fileSize}`,
+                        'Accept-Ranges' : 'bytes',
+                        'Content-Disposition' : `inline; filename=${path.basename(filePath)}"`,
+                        'Content-Length' : chunkSize
+                    };
+
+                    res.writeHead(206, head);
+                    file.pipe(res);
+
+                } else {
+                    const head = {
+                        'Content-Type' : mapContentType[extension] || 'text/plain',
+                        'Content-Disposition' : `inline; filename=${basename}"`,
+                        'Content-Length' : fileSize
+                    };
+
+                    res.writeHead(200, head);
                     fs.createReadStream(filePath).pipe(res);
                 }
-                catch(error) {
-                    throw error;
-                }
-            } else {
-                throw filePath + ' is a directory.'
             }
         })
         .catch((error) => {
+            console.log(error);
+
             response = { ...response, message : error };
             res.status(200).json(response);
         });
