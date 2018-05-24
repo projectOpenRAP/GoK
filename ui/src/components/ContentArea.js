@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Icon, Card, Divider, Header, Modal } from 'semantic-ui-react';
 
-import { Player } from 'video-react';
 import PDFViewer from 'mgr-pdf-viewer-react';
 
 import _ from 'lodash';
@@ -32,6 +31,16 @@ const mapIcon = {
     '.txt'  : ['file text outline', 'black'],
     '.zip'  : ['file archive outline', 'brown'],
     'dir'   : ['folder outline', 'yellow']
+}
+
+const VideoPlayer = (props) => {
+    return (
+        <video
+            controls
+            autoPlay
+            src={props.src}
+        />
+    )
 }
 
 class ContentArea extends Component {
@@ -75,11 +84,7 @@ class ContentArea extends Component {
             case '.wav':
             case '.mp4':
                 fileViewer = (
-                    <Player
-                        autoPlay
-                        playsInline
-                        src={url}
-                    />
+                    <VideoPlayer src={url} />
                 );
                 break;
             case '.pdf':
@@ -114,7 +119,7 @@ class ContentArea extends Component {
                 closeOnEscape={true}
                 closeIcon
             >
-                <Modal.Content>
+                <Modal.Content style={{ textAlign : 'center' }}>
                     { this.getFileViewer() }
                 </Modal.Content>
             </Modal>
