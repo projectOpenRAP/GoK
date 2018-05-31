@@ -77,7 +77,7 @@ class App extends Component {
                     />
                 </Grid.Row>
 
-                <Grid.Row style={{ paddingTop : '10em', zIndex : 1 }} stretched>
+                <Grid.Row style={{ paddingTop : '10em', zIndex : 1, height: '100vh' }} stretched>
                     <Grid.Column only='computer' computer={3}>
                         <SideBar
                             fileList={this.state.topLevelDirectories}
@@ -87,7 +87,7 @@ class App extends Component {
                         />
                     </Grid.Column>
 
-                    <Grid.Column mobile={16} computer={13}>
+                    <Grid.Column mobile={16} computer={13} style={{ overflowY : 'scroll'}}>
                         <ContentArea
                             fileList={this.state.fileList}
                             basePath={this.props.root}

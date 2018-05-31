@@ -54,7 +54,9 @@ let prepareDetailedFileList = (parentDirPath, fileList) => {
                 // Other file details can be added as and when required
                 return {
                     name : stats.name,
-                    isDirectory : stats.isDirectory
+                    isDirectory : stats.isDirectory,
+                    size : stats.size,
+                    uploadedOn : stats.birthtime.toLocalDateString()
                 }
             })
             .catch((error) => {

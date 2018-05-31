@@ -39,6 +39,8 @@ const VideoPlayer = (props) => {
             controls
             autoPlay
             src={props.src}
+            height={window.innerHeight - 60}
+            width={window.innerWidth - 60}
         />
     )
 }
@@ -96,6 +98,20 @@ class ContentArea extends Component {
                     />
                 );
                 break;
+            case '.html':
+                fileViewer = (
+                    <div>
+                        <iframe
+                            src={url}
+                            title="HTML Display Component"
+                            height={window.innerHeight - 60}
+                            width={window.innerWidth - 60}
+                            frameborder="0"
+                            style={{background: '#FFFFFF'}}
+                        />
+                    </div>
+                );
+                break;
             default:
                 fileViewer = (
                     <a href={url}>View in browser</a>
@@ -117,7 +133,7 @@ class ContentArea extends Component {
                 open={this.state.modalOpen}
                 onClose={this.handleModalClose}
                 closeOnEscape={true}
-                closeIcon
+                closeIcon={{ name: 'remove', size: 'big', link: true, className: 'icon-placement'}}
             >
                 <Modal.Content style={{ textAlign : 'center' }}>
                     { this.getFileViewer() }
@@ -134,6 +150,15 @@ class ContentArea extends Component {
             let filePath = path.resolve(this.props.currentPath, file.name);
             this.setState({ ...this.state, fileToBeViewed : filePath }, this.handleModalOpen);
         }
+    }
+
+    formatBytes = (bytes,decimals) => {
+        if(bytes === 0) return '0 Bytes';
+        var k = 1024,
+            dm = decimals || 2,
+            sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
     renderFileList = () => {
@@ -166,11 +191,14 @@ class ContentArea extends Component {
 
                         <span className="popup">
                             { path.relative(this.props.basePath, path.resolve(this.props.currentPath, file.name)) }
+                            { file.isDirectory ? null : <span><br/>File Size: { this.formatBytes(file.size, 2) }</span>}
+                            <br/>
+                            Uploaded On : { file.uploadedOn }
                         </span>
 
                         <Divider fitted hidden style={{ paddingTop : '0.4em' }}/>
 
-                        <div style={{ color : 'black', width : '100%', wordWrap : 'break-word' }}>
+                        <div style={{ color : 'black', width : '100%', wordWrap : 'break-word', fontSize : '16px' }}>
                             { path.basename(file.name) }
                         </div>
                     </a>
@@ -181,10 +209,10 @@ class ContentArea extends Component {
 
     render() {
         return (
-            <div style={{ minHeight : '56em', height : 'auto', padding : '0em', width : '100%' }}>
+            <div>
                 { this.renderModal() }
 
-                <Card.Group style={{ fontSize : '18px', paddingLeft : '1em', textAlign : 'left', width : '100%' }}>
+                <Card.Group style={{ fontSize : '18px', paddingLeft : '1em', paddingBottom : '3em', textAlign : 'left', width : '100%' }}>
                     {this.props.fileList.length > 0 && this.renderFileList()}
                     {this.props.fileList.length === 0 && this.renderEmptyFolder()}
                 </Card.Group>

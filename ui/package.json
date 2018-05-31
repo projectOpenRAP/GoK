@@ -12,8 +12,7 @@
     "react-scripts": "1.1.1",
     "redux": "^3.7.2",
     "semantic-ui-css": "^2.3.0",
-    "semantic-ui-react": "^0.78.3",
-    "video-react": "^0.10.4"
+    "semantic-ui-react": "^0.78.3"
   },
   "scripts": {
     "start": "react-scripts start",
