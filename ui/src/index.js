@@ -5,7 +5,6 @@ import App from './App';
 
 import './index.css';
 import 'semantic-ui-css/semantic.min.css';
-import '../node_modules/video-react/dist/video-react.css';
 
 import { FS_ROOT } from './config/config';
 
