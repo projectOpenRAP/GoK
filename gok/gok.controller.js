@@ -56,11 +56,11 @@ let prepareDetailedFileList = (parentDirPath, fileList) => {
                     name : stats.name,
                     isDirectory : stats.isDirectory,
                     size : stats.size,
-                    uploadedOn : stats.birthtime.toLocalDateString()
+                    uploadedOn : stats.birthtime.toLocaleDateString('en-IN')
                 }
             })
             .catch((error) => {
-                return error;
+                throw error;
             });
     });
 
