@@ -7,8 +7,7 @@ const q             =   require('q');
 const { FS_ROOT } = require('./config/config.js');
 
 let { prepareDetailedFileList } = require('./gok.controller');
-
-let generateMetaFileName = (metaFilePath, metaFileName) => metaFilePath.replace(new RegExp(path.sep, 'g'), '_') + '_' + metaFileName + '.json';
+let { initiateTelemetrySync } = require('./gok.telemetry');
 
 let createDirectoryIfNotExists = (dir) => {
     let defer = q.defer();
@@ -66,6 +65,15 @@ let generateMetaData = (parentDirPath) => {
     walk(parentDirPath);
 
     return defer.promise;
+}
+
+let generateMetaFileName = (metaFilePath, metaFileName) => {
+    return [
+        metaFilePath.replace(new RegExp(path.sep, 'g'), '_'),
+        '_',
+        metaFileName,
+        '.json'
+    ].join('');
 }
 
 let writeMetaDataToFolder = (fileMetaDataList) => {
@@ -149,11 +157,14 @@ let initializePlugin = () => {
         .then(indexMetaData)
         .then(({success}) => {
             if(success) {
-                console.log('Successfully initialized plugin.');
+                initiateTelemetrySync();
+                console.log('Successfully initialized GoK plugin.');
+            } else {
+                throw new Error('Indexing failed.');
             }
         })
-        .catch((error) => {
-            console.log("Error occurred during plugin initizalization.");
+        .catch(error => {
+            console.log('Error occurred during plugin initizalization.');
             console.log(error);
         });
 }
