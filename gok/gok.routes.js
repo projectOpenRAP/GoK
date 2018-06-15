@@ -7,16 +7,18 @@ let {
     performSearch,
 } = require('./gok.controller');
 
-module.exports = app => {
+let {
+    saveTelemetryData
+} = require('./gok.middleware');
 
+module.exports = app => {
     app.use(cors());
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
 
     app.get('/gok/file/list', getFileList);
-    app.get('/gok/file', getFileData);
-    app.get('/gok/file/search', performSearch);
+    app.get('/gok/file', saveTelemetryData, getFileData);
+    app.get('/gok/file/search', saveTelemetryData, performSearch);
 
-    // Initializing plugin    
     require('./gok.init.js').initializePlugin();
 }
