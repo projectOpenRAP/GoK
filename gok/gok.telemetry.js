@@ -23,7 +23,7 @@ let sendTelemetry = ({ fullPath, fullName, buffer }) => {
 
 	request.post({ url, formData }, (err, httpRes, body) => {
 		if(err) {
-			throw new Error(err);
+			console.log(err);
 		} else {
 			console.log('Telemetry sent. Response:', body);
 		}
