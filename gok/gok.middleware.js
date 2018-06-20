@@ -77,8 +77,8 @@ const _getSystemVersion = () => {
     return defer.promise;
 }
 
-const _getTimestamp = () => {
-	return new Date()
+const _formatTimestamp = timestamp => {
+	return timestamp
 			.toISOString('en-IN')
 			.replace(/T/, ' ')
 			.replace(/\..+/, '');
@@ -128,7 +128,7 @@ const _getUaspecObject = (headers) => {
 const saveTelemetryData = (req, res, next) => {
 	const remoteAddress = req.connection.remoteAddress;
 	const clientIP = remoteAddress.substring(remoteAddress.lastIndexOf(':') + 1);
-	const timestamp = _getTimestamp();
+	const timestamp = new Date(req.query.timestamp);
 
 	let telemetryData = { ...telemetryStructure };
 	let uaspec = _getUaspecObject(req.headers);
@@ -139,7 +139,6 @@ const saveTelemetryData = (req, res, next) => {
 
 	switch(req.route.path) {
 		case '/gok/file' :
-			// Temporarily here to provide data for visualization, needs changing
 			const stat = fs.statSync(req.query.path);
 
 			telemetryData = {
@@ -151,8 +150,8 @@ const saveTelemetryData = (req, res, next) => {
 				    'message': 'Client requested content',
 				    'params': [
 						{
-					        timestamp,
 					        uaspec,
+							'timestamp': _formatTimestamp(timestamp),
 					        'query': req.query,
 					        'results': {
 								'file': path.basename(req.query.path),
@@ -175,8 +174,8 @@ const saveTelemetryData = (req, res, next) => {
 			        'message': 'Client searched for content',
 			        'params': [
 						{
-				            timestamp,
 				            uaspec,
+							'timestamp': _formatTimestamp(timestamp),
 				            'query': req.query,
 				        }
 					]
@@ -192,7 +191,7 @@ const saveTelemetryData = (req, res, next) => {
 
 	telemetryData = {
 		...telemetryData,
-		'ets': new Date().getTime(),
+		'ets': timestamp.getTime(),
 		'ver': '3.0',
 		'actor': {
 			'id': clientIP
