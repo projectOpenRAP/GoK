@@ -24,6 +24,7 @@ let sendTelemetry = ({ fullPath, fullName, buffer }) => {
 	request.post({ url, formData }, (err, httpRes, body) => {
 		if(err) {
 			console.log(err);
+			throw err;
 		} else {
 			console.log('Telemetry sent. Response:', body);
 		}
@@ -38,12 +39,12 @@ let initiateTelemetrySync = () => {
             .then(() => getTelemetryData(plugin, 1))
             .then(res => {
 				if(res.success) {
-					return zipContents(plugin, res.data);
+					const data = zipContents(plugin, res.data);
+					return sendTelemetry(data)
 				} else {
 					throw res.msg;
 				}
 			})
-            .then(data => sendTelemetry(data))
             .catch(error => {
                 console.log('Telemetry not synced.');
                 console.log(error);
