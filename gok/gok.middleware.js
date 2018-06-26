@@ -133,6 +133,8 @@ const saveTelemetryData = (req, res, next) => {
 	let telemetryData = { ...telemetryStructure };
 	let uaspec = _getUaspecObject(req.headers);
 
+	req.query.path = decodeURIComponent(req.query.path);
+
 	/*
 	* Populating event-specific telemetry data
 	*/
