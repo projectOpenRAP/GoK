@@ -78,10 +78,21 @@ const _getSystemVersion = () => {
 }
 
 const _formatTimestamp = timestamp => {
-	return timestamp
-			.toISOString('en-IN')
-			.replace(/T/, ' ')
-			.replace(/\..+/, '');
+	const pad = number => number < 10 ? '0' + number : number;
+
+	const date = [
+		timestamp.getFullYear(),
+		pad(timestamp.getMonth()+1),
+		pad(timestamp.getDate())
+	].join('-');
+
+	const time = [
+		pad(timestamp.getHours()),
+		pad(timestamp.getMinutes()),
+		pad(timestamp.getSeconds())
+	].join(':');
+
+    return `${date} ${time}`;
 }
 
 const _getMacAddr = () => {
