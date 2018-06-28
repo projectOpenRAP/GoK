@@ -54,7 +54,13 @@ class App extends Component {
     }
 
     handleSearchClick = (e, searchText) => {
-        axios.get(`${BASE_URL}/file/search`, { params : { query : searchText, path : this.state.currentPath }})
+        const params = {
+            query : searchText,
+            path : this.state.currentPath,
+            timestamp : new Date()
+        }
+
+        axios.get(`${BASE_URL}/file/search`, { params })
             .then((response) => {
                 let searchHits = response.data.data.map(item => ({ name : item.pathtoEachFile, isDirectory : item.isDirectory, size : item.size, uploadedOn: item.uploadedOn }));
 
@@ -69,7 +75,7 @@ class App extends Component {
     render() {
         return (
             <Grid columns='equal' style={{ margin : '0' }}>
-                <Grid.Row style={{ paddingRight : '0.5em', position : 'fixed', top : '0', zIndex : 2, backgroundColor : 'white'  }} stretched>
+                <Grid.Row style={{ paddingRight : '0.5em', position : 'fixed', top : '0', zIndex : 2, backgroundColor : 'white' }} stretched>
                     <NavigationBar
                         basePath={this.props.root}
                         currentPath={this.state.currentPath} onSearchClick={this.handleSearchClick}
