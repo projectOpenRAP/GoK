@@ -68,15 +68,9 @@ class ContentArea extends Component {
     }
 
     getFileViewer = () => {
+        const url = `${BASE_URL}/file?path=${this.state.fileToBeViewed}&timestamp=${new Date()}`
 
         let fileViewer = undefined;
-
-        let url = [
-            BASE_URL,
-            '/file?path=',
-            this.state.fileToBeViewed,
-        ].join('');
-
         let extension = path.extname(this.state.fileToBeViewed);
 
         // TODO create a map for file type
