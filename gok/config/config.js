@@ -8,5 +8,5 @@ module.exports = {
         hello : `http://35.240.131.174:8000/api/auth/v1/hello`, // Checks if the user is authenticated
         upload : `http://35.240.131.174:8000/api/auth/v1/telemetry/couchbase` // Load telemetry
     },
-    keyFile : '/home/admin/key'
+    keyFile : '/etc/telemetry_key'
 }

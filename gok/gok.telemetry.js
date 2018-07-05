@@ -106,7 +106,7 @@ let sendTelemetry = ({ fullPath, fullName, buffer }) => {
 			defer.reject(err);
 		} else {
 			console.log('Sending telemetry...');
-			defer.resolve({ success : true, body });
+			defer.resolve(JSON.parse(body));
 		}
 	});
 
@@ -153,9 +153,9 @@ let initiateTelemetrySync = () => {
 			})
 			.then(res => {
 				if(res.success) {
-					console.log('Telemetry synced. Server response:', res.body);
+					console.log('Telemetry synced. Server response:', res);
 				} else {
-					throw 'Error occurred while syncing telemetry. Server response: ' + res.body;
+					throw 'Error occurred while syncing telemetry. Server response: ' + JSON.stringify(res);
 				}
 			})
             .catch(error => {
