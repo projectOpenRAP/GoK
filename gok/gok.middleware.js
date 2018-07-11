@@ -81,15 +81,15 @@ const _formatTimestamp = timestamp => {
 	const pad = number => number < 10 ? '0' + number : number;
 
 	const date = [
-		timestamp.getFullYear(),
-		pad(timestamp.getMonth()+1),
-		pad(timestamp.getDate())
+		timestamp.getUTCFullYear(),
+		pad(timestamp.getUTCMonth()+1),
+		pad(timestamp.getUTCDate())
 	].join('-');
 
 	const time = [
-		pad(timestamp.getHours()),
-		pad(timestamp.getMinutes()),
-		pad(timestamp.getSeconds())
+		pad(timestamp.getUTCHours()),
+		pad(timestamp.getUTCMinutes()),
+		pad(timestamp.getUTCSeconds())
 	].join(':');
 
     return `${date} ${time}`;
@@ -139,7 +139,7 @@ const _getUaspecObject = (headers) => {
 const saveTelemetryData = (req, res, next) => {
 	const remoteAddress = req.connection.remoteAddress;
 	const clientIP = remoteAddress.substring(remoteAddress.lastIndexOf(':') + 1);
-	const timestamp = new Date(req.query.timestamp);
+	const timestamp = new Date(parseInt(req.query.timestamp));
 
 	let telemetryData = { ...telemetryStructure };
 	let uaspec = _getUaspecObject(req.headers);
