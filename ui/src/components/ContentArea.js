@@ -71,14 +71,25 @@ class ContentArea extends Component {
     }
 
     renderEmptyFolder() {
-        return (
-            <div className="watermark" >
-                <Icon disabled name='file text' />
-                <Header as='h2' disabled>
-                    Folder is Empty
-                </Header>
-            </div>
-        )
+        if (this.props.searchActiveFlag) {
+            return (
+                <div className="watermark" >
+                    <Icon disabled name='search' />
+                    <Header as='h2' disabled>
+                        No search hits
+                    </Header>
+                </div>
+            )
+        } else {
+            return (
+                <div className="watermark" >
+                    <Icon disabled name='file text' />
+                    <Header as='h2' disabled>
+                        Folder is Empty
+                    </Header>
+                </div>
+            )
+        }
     }
 
     getFileViewer = () => {
