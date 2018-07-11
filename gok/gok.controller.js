@@ -155,6 +155,35 @@ let getFileData = (req, res) => {
         });
 }
 
+let getFileMetaData = (cleanedResults) => {
+    let defer = q.defer();
+
+    let allSearchedFileList = cleanedResults.map(file => {
+        let pathtoEachFile = path.join(file.path, file.name);
+        return getFileInfo(pathtoEachFile)
+            .then((stats) => {
+                return {
+                    pathtoEachFile,
+                    isDirectory : stats.isDirectory,
+                    size : stats.size,
+                    uploadedOn : stats.birthtime.toLocaleDateString('en-IN')
+                }
+            })
+            .catch((error) => {
+                throw error;
+            });
+    })
+
+    q.all(allSearchedFileList)
+        .then((detailedFileList) => {
+            defer.resolve(detailedFileList);
+        })
+        .catch((error) => {
+            defer.reject(error);
+        });
+    return defer.promise;
+}
+
 let performSearch = (req, res) => {
     let response = {
         success : false,
@@ -199,8 +228,11 @@ let performSearch = (req, res) => {
             // To show only folder specific files
             // .filter(item => item.path.startsWith(req.query.path));
 
-            response = { ...response, success : true, data : cleanedResults, message : 'Search hits retrieved.' };
-            res.status(200).json(response);
+            getFileMetaData(cleanedResults)
+                .then((detailedFileList) => {
+                    response = { ...response, success : true, data : detailedFileList, message : 'Search hits retrieved.' };
+                    res.status(200).json(response);
+                })
         })
         .catch((error) => {
             response = { ...response, message : error };

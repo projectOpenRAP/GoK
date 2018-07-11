@@ -62,7 +62,7 @@ class App extends Component {
 
         axios.get(`${BASE_URL}/file/search`, { params })
             .then((response) => {
-                let searchHits = response.data.data.map(item => ({ name : path.join(item.path, item.name), isDirectory : false }));
+                let searchHits = response.data.data.map(item => ({ name : item.pathtoEachFile, isDirectory : item.isDirectory, size : item.size, uploadedOn: item.uploadedOn }));
 
                 this.setState({ ...this.state, fileList : searchHits });
             })
@@ -93,13 +93,14 @@ class App extends Component {
                         />
                     </Grid.Column>
 
-                    <Grid.Column mobile={16} computer={13} style={{ overflowY : 'scroll'}}>
+                    <Grid.Column mobile={16} computer={13} style={{ overflowY : 'scroll' }}>
                         <ContentArea
                             fileList={this.state.fileList}
                             basePath={this.props.root}
                             currentPath={this.state.currentPath}
                             setPath={this.setPath}
-                            handleModalOpen={this.handleModalOpen}/>
+                            handleModalOpen={this.handleModalOpen}
+                        />
                     </Grid.Column>
                 </Grid.Row>
             </Grid>
