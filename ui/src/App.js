@@ -57,7 +57,7 @@ class App extends Component {
         const params = {
             query : searchText,
             path : this.state.currentPath,
-            timestamp : new Date()
+            timestamp : `${new Date().getTime()}`
         }
 
         axios.get(`${BASE_URL}/file/search`, { params })

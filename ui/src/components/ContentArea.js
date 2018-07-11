@@ -83,7 +83,7 @@ class ContentArea extends Component {
 
     getFileViewer = () => {
         const encodedFileName = encodeURIComponent(this.state.fileToBeViewed);
-        const url = `${BASE_URL}/file?path=${encodedFileName}&timestamp=${new Date()}`
+        const url = `${BASE_URL}/file?path=${encodedFileName}&timestamp=${new Date().getTime()}`
 
         let fileViewer = undefined;
 
