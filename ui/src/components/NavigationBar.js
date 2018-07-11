@@ -22,12 +22,17 @@ class NavigationBar extends Component {
     //     this.setState({ ...this.state, inputIcon : this.state.inputIcon === 'search' ? 'close' : 'search' }, callback);
     // }
 
-    handleKeyPress = e => e.key === 'Enter' && this.handleSearchClick();
+    handleKeyUp = e => e.keyCode === 13 && this.handleSearchClick();
 
     handleSearchClick = (e) => {
         // this.toggleInputIcon(() => {
             // if(this.state.inputIcon === 'close') {
+            if (this.state.searchText.length !== 0) {
                 this.props.onSearchClick(e, this.state.searchText);
+            }
+            else {
+                alert("Please enter the search box");
+            }
         //     } else {
         //         this.props.setPath();
         //     }
@@ -36,7 +41,9 @@ class NavigationBar extends Component {
 
     handleInputTextChange = e => this.setState({ searchText : e.target.value });
 
-    handleHomeClick = e => this.props.setPath(this.props.basePath);
+    handleHomeClick = (e) => {
+        this.props.setPath(this.props.basePath);
+    }
 
     handleBackClick = (e) => {
         let newPath = path.join(this.props.currentPath, '../');
@@ -53,9 +60,8 @@ class NavigationBar extends Component {
                         <Button
                             fluid
                             primary
-                            icon={<Icon size='large' name='arrow up'/>}
-                            onClick={this.handleBackClick}
-                            disabled={this.atHome()}
+                            icon={<Icon size='large' name='home'/>}
+                            onClick={this.handleHomeClick}
                         />
                     </Grid.Column>
 
@@ -63,8 +69,9 @@ class NavigationBar extends Component {
                         <Button
                             fluid
                             primary
-                            icon={<Icon size='large' name='home'/>}
-                            onClick={this.handleHomeClick}
+                            icon={<Icon size='large' name='arrow up'/>}
+                            onClick={this.handleBackClick}
+                            disabled={this.atHome()}
                         />
                     </Grid.Column>
 
@@ -74,7 +81,7 @@ class NavigationBar extends Component {
                         </Segment>
                     </Grid.Column>
 
-                    <Grid.Column mobile={8} tablet={4} computer={5} onKeyPress={this.handleKeyPress}>
+                    <Grid.Column mobile={8} tablet={4} computer={5} onKeyUp={this.handleKeyUp}>
                         <Input
                             action={{ icon : 'search', size : 'big', color : 'blue', onClick : this.handleSearchClick }}
                             placeholder='Search...'
