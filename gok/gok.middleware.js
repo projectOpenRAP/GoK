@@ -81,15 +81,15 @@ const _formatTimestamp = timestamp => {
 	const pad = number => number < 10 ? '0' + number : number;
 
 	const date = [
-		timestamp.getUTCFullYear(),
-		pad(timestamp.getUTCMonth()+1),
-		pad(timestamp.getUTCDate())
+		timestamp.getFullYear(),
+		pad(timestamp.getMonth()+1),
+		pad(timestamp.getDate())
 	].join('-');
 
 	const time = [
-		pad(timestamp.getUTCHours()),
-		pad(timestamp.getUTCMinutes()),
-		pad(timestamp.getUTCSeconds())
+		pad(timestamp.getHours()),
+		pad(timestamp.getMinutes()),
+		pad(timestamp.getSeconds())
 	].join(':');
 
     return `${date} ${time}`;
