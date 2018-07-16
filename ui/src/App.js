@@ -67,7 +67,7 @@ class App extends Component {
         const params = {
             query : searchText,
             path : this.state.currentPath,
-            timestamp : new Date()
+            timestamp : `${new Date().getTime()}`
         }
 
         this.setState({
