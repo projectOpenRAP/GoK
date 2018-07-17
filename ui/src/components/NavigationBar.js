@@ -43,11 +43,18 @@ class NavigationBar extends Component {
 
     handleHomeClick = (e) => {
         this.props.setPath(this.props.basePath);
+        this.props.disableSearchComponent();
     }
 
     handleBackClick = (e) => {
-        let newPath = path.join(this.props.currentPath, '../');
-        this.props.setPath(newPath);
+        if (this.props.searchActiveFlag) {
+            let newPath = path.join(this.props.currentPath, './');
+            this.props.setPath(newPath);
+            this.props.disableSearchComponent();
+        } else {
+            let newPath = path.join(this.props.currentPath, '../');
+            this.props.setPath(newPath);
+        }
     }
 
     atHome = () => this.props.currentPath === this.props.basePath;
