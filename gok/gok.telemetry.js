@@ -14,6 +14,7 @@ const {
 const config = require('./config/config.js');
 
 const plugin = 'gok';
+const telemetryPath = '/home/admin/telemetry';
 
 let storeKey = key => {
     return fs.writeFileSync(config.keyFile, key);
@@ -86,7 +87,31 @@ let authenticateUser = () => {
 	return defer.promise;
 }
 
-let sendTelemetry = ({ fullPath, fullName, buffer }) => {
+let markAsFailed = ({ fullPath, fileName }) => {
+	if(!fileName.endsWith('_failed')) {
+		fs.rename(fullPath, `${fullPath}_failed`, err => {
+			if(err) {
+				throw err;
+			}
+
+			console.log(`Failed to sync ${fileName}. Will try re-uploading later.`);
+		});
+	}
+}
+
+let markAsResolved = ({ fullPath, fileName }) => {
+	if(fileName.endsWith('_failed')) {
+		fs.rename(fullPath, fullPath.substring(0, fullPath.lastIndexOf('_')), err => {
+			if(err) {
+				throw err;
+			}
+
+			// console.log('Marked as resolved.', fullPath);
+		});
+	}
+}
+
+let sendTelemetry = ({ fullPath, fileName, buffer }) => {
 	let defer = q.defer();
 
 	const url = config.telemetryAPI.upload;
@@ -101,16 +126,51 @@ let sendTelemetry = ({ fullPath, fullName, buffer }) => {
 		headers : { apikey }
 	};
 
+	// console.log(JSON.stringify(options, null, 4));
+	console.log('Sending telemetry...');
+
 	request.post(options, (err, httpRes, body) => {
 		if(err) {
+			markAsFailed({ fullPath, fileName });
 			defer.reject(err);
 		} else {
-			console.log('Sending telemetry...');
-			defer.resolve(JSON.parse(body));
+			defer.resolve({
+				fullPath,
+				fileName,
+				body
+			});
 		}
 	});
 
 	return defer.promise;
+}
+
+let retryFailedUploads = () => {
+	const toUpload = fs.readdirSync(`${telemetryPath}/zip`)
+						.filter(file => file.endsWith('_failed'));
+
+	// console.log('Retrying failed uploads:', toUpload);
+
+	return q.allSettled(toUpload.map(file => {
+		const data = {
+			fileName : file,
+			fullPath : `${telemetryPath}/zip/${file}`
+		}
+
+		return sendTelemetry(data)
+			.then(res => {
+				const body = JSON.parse(res.body);
+
+				if(body.success) {
+					markAsResolved(data);
+				}
+
+				return res;
+			})
+			.catch(error => {
+				throw error;
+			})
+	}));
 }
 
 let initiateTelemetrySync = () => {
@@ -146,17 +206,24 @@ let initiateTelemetrySync = () => {
             .then(res => {
 				if(res.success) {
 					const data = zipContents(plugin, res.data);
-					return sendTelemetry(data)
+					return sendTelemetry(data);
 				} else {
 					throw res.msg;
 				}
 			})
 			.then(res => {
-				if(res.success) {
-					console.log('Telemetry synced. Server response:', res);
+				const body = JSON.parse(res.body);
+
+				if(body.success) {
+					console.log('Telemetry synced. Server response:', body);
+					return retryFailedUploads();
 				} else {
-					throw 'Error occurred while syncing telemetry. Server response: ' + JSON.stringify(res);
+					markAsFailed(res);
+					throw 'Error occurred while syncing telemetry. Server response: ' + res.body;
 				}
+			})
+			.then(res => {
+				// console.log('Status after retyring upload:\n', res);
 			})
             .catch(error => {
                 console.log('Telemetry not synced.');
