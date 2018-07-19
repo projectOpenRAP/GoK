@@ -12,6 +12,7 @@ class SideBar extends Component {
 
     handleItemClick = (e, { name }) => {
         this.setState({ activeDirectory : name }, this.updateCurrentDirectory);
+        this.props.disableSearchComponent();
     }
 
     atHome = () => this.props.currentPath === this.props.basePath;

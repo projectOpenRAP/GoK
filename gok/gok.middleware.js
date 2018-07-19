@@ -4,11 +4,13 @@ const uniqid = require('uniqid');
 const fs = require('fs');
 const path = require('path');
 const q = require('q');
-const mac = require('getmac');
 
 const {
 	saveTelemetry
 } = require('../../../telemetrysdk');
+let {
+	selectFields
+} = require('dbsdk');
 
 // Generic telemetry JSON structure
 const telemetryStructure = {
@@ -81,31 +83,30 @@ const _formatTimestamp = timestamp => {
 	const pad = number => number < 10 ? '0' + number : number;
 
 	const date = [
-		timestamp.getUTCFullYear(),
-		pad(timestamp.getUTCMonth()+1),
-		pad(timestamp.getUTCDate())
+		timestamp.getFullYear(),
+		pad(timestamp.getMonth()+1),
+		pad(timestamp.getDate())
 	].join('-');
 
 	const time = [
-		pad(timestamp.getUTCHours()),
-		pad(timestamp.getUTCMinutes()),
-		pad(timestamp.getUTCSeconds())
+		pad(timestamp.getHours()),
+		pad(timestamp.getMinutes()),
+		pad(timestamp.getSeconds())
 	].join(':');
 
     return `${date} ${time}`;
 }
 
-const _getMacAddr = () => {
+const _getDeviceID = () => {
 	let defer = q.defer();
 
-	mac.getMac((err, addr) => {
-		if(err) {
-			console.log('Error encountered while fetching mac address.', err);
-			defer.reject(err);
-		} else {
-			defer.resolve(addr);
-		}
-	});
+	selectFields({dbName : 'device_mgmt', tableName : 'device', columns : ["dev_id"]})
+	.then(response => {
+		defer.resolve(response);
+	}).catch(e => {
+		console.log(e);
+		defer.reject(e);
+	})
 
     return defer.promise;
 }
@@ -231,10 +232,10 @@ const saveTelemetryData = (req, res, next) => {
 				}
 			}
 
-			return _getMacAddr();
+			return _getDeviceID();
 		})
-		.then(macAddr => {
-			const deviceID = macAddr;
+		.then(response => {
+			const deviceID = response[0].dev_id;
 
 			telemetryData = {
 				...telemetryData,
