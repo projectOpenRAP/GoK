@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Grid } from 'semantic-ui-react';
+import { Grid, Header } from 'semantic-ui-react';
 
 import { NavigationBar } from './components/NavigationBar';
 import { SideBar } from './components/SideBar';
@@ -10,6 +10,14 @@ import path from 'path';
 
 import { BASE_URL } from './config/config';
 
+const SearchComponent = (props) => {
+    return (
+        <div>
+            <Header as='h1'>Search Results for "{props.searchText}"</Header>
+            {props.content}
+        </div>
+    )
+}
 
 class App extends Component {
 
@@ -20,6 +28,8 @@ class App extends Component {
             currentPath : sessionStorage.getItem('pathVisited') || this.props.root,
             fileList : [],
             topLevelDirectories : [],
+            searchText : '',
+            searchActiveFlag : false,
         }
     }
 
@@ -57,19 +67,29 @@ class App extends Component {
         const params = {
             query : searchText,
             path : this.state.currentPath,
-            timestamp : new Date()
+            timestamp : `${new Date().getTime()}`
         }
+
+        this.setState({
+            searchText
+        });
 
         axios.get(`${BASE_URL}/file/search`, { params })
             .then((response) => {
-                let searchHits = response.data.data.map(item => ({ name : path.join(item.path, item.name), isDirectory : false }));
+                let searchHits = response.data.data.map(item => ({ name : item.pathtoEachFile, isDirectory : item.isDirectory, size : item.size, uploadedOn: item.uploadedOn }));
 
-                this.setState({ ...this.state, fileList : searchHits });
+                this.setState({ ...this.state, fileList : searchHits, searchActiveFlag : true });
             })
             .catch((error) => {
                 console.log(error);
                 alert('Search failed.');
             })
+    }
+
+    disableSearchComponent = () => {
+        this.setState({
+            searchActiveFlag : false
+        });
     }
 
     render() {
@@ -78,8 +98,11 @@ class App extends Component {
                 <Grid.Row style={{ paddingRight : '0.5em', position : 'fixed', top : '0', zIndex : 2, backgroundColor : 'white' }} stretched>
                     <NavigationBar
                         basePath={this.props.root}
-                        currentPath={this.state.currentPath} onSearchClick={this.handleSearchClick}
+                        currentPath={this.state.currentPath}
+                        onSearchClick={this.handleSearchClick}
                         setPath={this.setPath}
+                        disableSearchComponent={this.disableSearchComponent}
+                        searchActiveFlag={this.state.searchActiveFlag}
                     />
                 </Grid.Row>
 
@@ -90,16 +113,39 @@ class App extends Component {
                             basePath={this.props.root}
                             currentPath={this.state.currentPath}
                             setPath={this.setPath}
+                            disableSearchComponent={this.disableSearchComponent}
                         />
                     </Grid.Column>
 
-                    <Grid.Column mobile={16} computer={13} style={{ overflowY : 'scroll'}}>
-                        <ContentArea
-                            fileList={this.state.fileList}
-                            basePath={this.props.root}
-                            currentPath={this.state.currentPath}
-                            setPath={this.setPath}
-                            handleModalOpen={this.handleModalOpen}/>
+                    <Grid.Column mobile={16} computer={13} style={{ overflowY : 'scroll' }}>
+                        { /*Add a search related state to check whether search is active or not
+                        and depending upon that add the composition*/ }
+                        { this.state.searchActiveFlag ? (
+                            <SearchComponent
+                                content = {
+                                    <ContentArea
+                                        fileList={this.state.fileList}
+                                        basePath={this.props.root}
+                                        currentPath={this.state.currentPath}
+                                        setPath={this.setPath}
+                                        handleModalOpen={this.handleModalOpen}
+                                        searchActiveFlag={this.state.searchActiveFlag}
+                                    />
+                                }
+                                searchText = {
+                                    this.state.searchText
+                                }
+                            />
+                        ) : (
+                            <ContentArea
+                                fileList={this.state.fileList}
+                                basePath={this.props.root}
+                                currentPath={this.state.currentPath}
+                                setPath={this.setPath}
+                                handleModalOpen={this.handleModalOpen}
+                                searchActiveFlag={this.state.searchActiveFlag}
+                            />
+                        )}
                     </Grid.Column>
                 </Grid.Row>
             </Grid>

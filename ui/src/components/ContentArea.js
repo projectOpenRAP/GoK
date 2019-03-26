@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Icon, Card, Divider, Header, Modal } from 'semantic-ui-react';
+import { Segment, Icon, Card, Divider, Header, Modal } from 'semantic-ui-react';
 
 import PDFViewer from 'mgr-pdf-viewer-react';
 
@@ -33,6 +33,20 @@ const mapIcon = {
     'dir'   : ['folder outline', 'yellow']
 }
 
+const AudioPlayer = (props) => {
+    return (
+        <Segment color='violet' padded='very' style={{marginTop: '10%'}}>
+            <Header as='h1'>{path.basename(props.name)}</Header>
+            <audio
+                controls
+                autoPlay
+                src={props.src}
+                type="audio/mpeg"
+            />
+        </Segment>
+    )
+}
+
 const VideoPlayer = (props) => {
     return (
         <video
@@ -57,26 +71,43 @@ class ContentArea extends Component {
     }
 
     renderEmptyFolder() {
-        return (
-            <div className="watermark" >
-                <Icon disabled name='file text' />
-                <Header as='h2' disabled>
-                    Folder is Empty
-                </Header>
-            </div>
-        )
+        if (this.props.searchActiveFlag) {
+            return (
+                <div className="watermark" >
+                    <Icon disabled name='search' />
+                    <Header as='h2' disabled>
+                        No search hits
+                    </Header>
+                </div>
+            )
+        } else {
+            return (
+                <div className="watermark" >
+                    <Icon disabled name='file text' />
+                    <Header as='h2' disabled>
+                        Folder is Empty
+                    </Header>
+                </div>
+            )
+        }
     }
 
     getFileViewer = () => {
-        const url = `${BASE_URL}/file?path=${this.state.fileToBeViewed}&timestamp=${new Date()}`
+        const encodedFileName = encodeURIComponent(this.state.fileToBeViewed);
+        const url = `${BASE_URL}/file?path=${encodedFileName}&timestamp=${new Date().getTime()}`
 
         let fileViewer = undefined;
+
         let extension = path.extname(this.state.fileToBeViewed);
 
         // TODO create a map for file type
 
         switch(extension) {
             case '.mp3':
+                fileViewer = (
+                    <AudioPlayer src={url} name={this.state.fileToBeViewed}/>
+                );
+                break;
             case '.wav':
             case '.mp4':
                 fileViewer = (
